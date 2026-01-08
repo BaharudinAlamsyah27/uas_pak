@@ -2,9 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LandingController;
-use App\Http\Controllers\KendaraanController;
+use App\Http\Controllers\Admin\KendaraanController; // Pastikan ini mengarah ke folder Admin
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\Front\SewaController;
 use App\Http\Controllers\RentalController;
 
 /*
@@ -14,48 +13,48 @@ use App\Http\Controllers\RentalController;
 */
 
 // ==========================================
-// 1. LANDING PAGE (User / Frontend)
+// 1. LANDING PAGE (Public)
 // ==========================================
-Route::get('/', [LandingController::class, 'index']);
-
-// Route untuk memproses sewa (disiapkan untuk nanti)
-// Route::post('/sewa', [LandingController::class, 'storeSewa'])->name('sewa.store'); 
+Route::get('/', [LandingController::class, 'index'])->name('home');
 
 
 // ==========================================
-// 2. ADMIN PANEL
+// 2. ADMIN PANEL ROUTES
 // ==========================================
-// Semua route di dalam sini otomatis diawali "/admin"
+// Kita hapus "->name('admin.')" agar nama routenya kembali standar (kendaraan.index, dll)
 Route::prefix('admin')->group(function () {
 
-    // A. Dashboard Admin
-    // URL: http://127.0.0.1:8000/admin/dashboard
+    // Dashboard Admin
     Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 
-    // Redirect: Jika buka "/admin" saja, lempar ke "/admin/dashboard"
+    // Redirect root admin ke dashboard
     Route::get('/', function () {
         return redirect()->route('admin.dashboard');
     });
 
-    // B. CRUD Kendaraan
-    // URL: http://127.0.0.1:8000/admin/kendaraan
-    // Ini otomatis membuat route: index, create, store, edit, update, destroy
-    // Nama route otomatis: admin.kendaraan.index, admin.kendaraan.create, dst.
+    // CRUD KENDARAAN
+    // URL: /admin/kendaraan
+    // Route Names: kendaraan.index, kendaraan.create, kendaraan.store, dll.
     Route::resource('kendaraan', KendaraanController::class);
 
-    // C. Route Tambahan (sewa)
-    Route::get('/sewa/{id}', [SewaController::class, 'create'])->name('sewa.create');
-Route::post('/sewa/proses', [SewaController::class, 'store'])->name('sewa.store');
-Route::get('/sewa/nota/{id}', [SewaController::class, 'nota'])->name('sewa.nota');
 });
 
+
+// ==========================================
+// 3. USER ROUTES (Fitur Sewa - Login Required)
+// ==========================================
 Route::middleware(['auth'])->group(function () {
-    // Menampilkan form sewa berdasarkan ID kendaraan
+    
+    // Halaman Riwayat Transaksi
+    Route::get('/riwayat-sewa', [RentalController::class, 'history'])->name('rental.history');
+
+    // Halaman Form Sewa
     Route::get('/sewa/{kendaraan_id}', [RentalController::class, 'create'])->name('rental.create');
     
-    // Memproses data form
+    // Proses Simpan Data Sewa
     Route::post('/sewa', [RentalController::class, 'store'])->name('rental.store');
     
-    // Halaman riwayat transaksi
-    Route::get('/riwayat-sewa', [RentalController::class, 'history'])->name('rental.history');
+    // Proses Pengembalian
+    Route::post('/rentals/{id}/return', [RentalController::class, 'returnItem'])->name('rental.return');
 });
+
