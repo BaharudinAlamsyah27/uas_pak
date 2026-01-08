@@ -6,28 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up()
-{
-    Schema::create('rentals', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Peminjam
-        $table->foreignId('product_id')->constrained()->onDelete('cascade'); // Barang yang disewa
-        $table->date('start_date'); // Tanggal mulai
-        $table->date('end_date');   // Tanggal kembali
-        $table->decimal('total_price', 10, 2); // Total harga sewa
-        $table->enum('status', ['active', 'returned', 'overdue'])->default('active'); // Status sewa
-        $table->date('returned_at')->nullable(); // Tanggal aktual pengembalian
-        $table->timestamps();
-    });
-}
+    {
+        Schema::create('rentals', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            // Ubah product_id menjadi kendaraan_id
+            $table->foreignId('kendaraan_id')->constrained('kendaraan')->onDelete('cascade'); 
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->decimal('total_price', 15, 2); // 15,2 untuk angka rupiah besar
+            $table->enum('status', ['active', 'returned', 'overdue'])->default('active');
+            $table->date('returned_at')->nullable();
+            $table->timestamps();
+        });
+    }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('rentals');
     }

@@ -4,11 +4,11 @@
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-flex align-items-center justify-content-between">
-            <h4 class="mb-0 font-size-18">Tambah Kendaraan</h4>
+            <h4 class="mb-0 font-size-18">Edit Kendaraan</h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
                     <li class="breadcrumb-item"><a href="{{ route('kendaraan.index') }}">Kendaraan</a></li>
-                    <li class="breadcrumb-item active">Tambah Baru</li>
+                    <li class="breadcrumb-item active">Edit</li>
                 </ol>
             </div>
         </div>
@@ -16,48 +16,45 @@
 </div>
 
 <div class="row">
-    <div class="col-lg-8"> <div class="card">
+    <div class="col-lg-8">
+        <div class="card">
             <div class="card-body">
-                <h4 class="card-title mb-4">Form Input Data</h4>
+                <h4 class="card-title mb-4">Update Data: {{ $kendaraan->merk }}</h4>
 
-                <form action="{{ route('kendaraan.store') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('kendaraan.update', $kendaraan->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
-
-                    <div class="form-group row mb-4">
+                    @method('PUT') <div class="form-group row mb-4">
                         <label class="col-sm-3 col-form-label">Merk Kendaraan</label>
                         <div class="col-sm-9">
-                            <input type="text" name="merk" class="form-control @error('merk') is-invalid @enderror" value="{{ old('merk') }}" placeholder="Contoh: Honda Jazz RS">
-                            @error('merk') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            <input type="text" name="merk" class="form-control" value="{{ old('merk', $kendaraan->merk) }}">
                         </div>
                     </div>
 
                     <div class="form-group row mb-4">
                         <label class="col-sm-3 col-form-label">Plat Nomor</label>
                         <div class="col-sm-9">
-                            <input type="text" name="plat_nomor" class="form-control @error('plat_nomor') is-invalid @enderror" value="{{ old('plat_nomor') }}" placeholder="H 1234 AB">
-                            @error('plat_nomor') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            <input type="text" name="plat_nomor" class="form-control" value="{{ old('plat_nomor', $kendaraan->plat_nomor) }}">
                         </div>
                     </div>
 
                     <div class="form-group row mb-4">
-                        <label class="col-sm-3 col-form-label">Harga Sewa (per Hari)</label>
+                        <label class="col-sm-3 col-form-label">Harga Sewa</label>
                         <div class="col-sm-9">
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Rp</span>
                                 </div>
-                                <input type="number" name="harga" class="form-control @error('harga') is-invalid @enderror" value="{{ old('harga') }}">
+                                <input type="number" name="harga" class="form-control" value="{{ old('harga', $kendaraan->harga) }}">
                             </div>
-                            @error('harga') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
                     </div>
 
                     <div class="form-group row mb-4">
-                        <label class="col-sm-3 col-form-label">Status Awal</label>
+                        <label class="col-sm-3 col-form-label">Status</label>
                         <div class="col-sm-9">
                             <select name="status" class="form-control custom-select">
-                                <option value="Tersedia">Tersedia</option>
-                                <option value="Sedang Disewa">Sedang Disewa</option>
+                                <option value="Tersedia" {{ $kendaraan->status == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
+                                <option value="Sedang Disewa" {{ $kendaraan->status == 'Sedang Disewa' ? 'selected' : '' }}>Sedang Disewa</option>
                             </select>
                         </div>
                     </div>
@@ -65,24 +62,34 @@
                     <div class="form-group row mb-4">
                         <label class="col-sm-3 col-form-label">Deskripsi</label>
                         <div class="col-sm-9">
-                            <textarea name="deskripsi" class="form-control" rows="3">{{ old('deskripsi') }}</textarea>
+                            <textarea name="deskripsi" class="form-control" rows="3">{{ old('deskripsi', $kendaraan->deskripsi) }}</textarea>
                         </div>
                     </div>
 
                     <div class="form-group row mb-4">
-                        <label class="col-sm-3 col-form-label">Gambar</label>
+                        <label class="col-sm-3 col-form-label">Gambar Saat Ini</label>
+                        <div class="col-sm-9">
+                            @if($kendaraan->gambar)
+                                <img src="{{ asset('storage/' . $kendaraan->gambar) }}" alt="img" class="img-thumbnail rounded" width="150">
+                            @else
+                                <span class="text-muted font-italic">Tidak ada gambar</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="form-group row mb-4">
+                        <label class="col-sm-3 col-form-label">Ganti Gambar</label>
                         <div class="col-sm-9">
                             <div class="custom-file">
-                                <input type="file" name="gambar" class="custom-file-input @error('gambar') is-invalid @enderror" id="customFile">
-                                <label class="custom-file-label" for="customFile">Pilih gambar...</label>
+                                <input type="file" name="gambar" class="custom-file-input" id="customFileEdit">
+                                <label class="custom-file-label" for="customFileEdit">Pilih file baru jika ingin mengubah...</label>
                             </div>
-                            @error('gambar') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
                     </div>
 
                     <div class="form-group row justify-content-end">
                         <div class="col-sm-9">
-                            <button type="submit" class="btn btn-primary w-md">Simpan Data</button>
+                            <button type="submit" class="btn btn-success w-md">Update Perubahan</button>
                             <a href="{{ route('kendaraan.index') }}" class="btn btn-secondary w-md ml-1">Batal</a>
                         </div>
                     </div>

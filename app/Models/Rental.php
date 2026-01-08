@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
 
 class Rental extends Model
 {
@@ -12,7 +11,7 @@ class Rental extends Model
 
     protected $fillable = [
         'user_id',
-        'product_id',
+        'kendaraan_id', // Sesuaikan nama kolom
         'start_date',
         'end_date',
         'total_price',
@@ -20,15 +19,14 @@ class Rental extends Model
         'returned_at'
     ];
 
-    // Relasi ke User (Penyewa)
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Relasi ke Produk
-    public function product()
+    // Relasi ke Kendaraan
+    public function kendaraan()
     {
-       return $this->belongsTo(Product::class);
+        return $this->belongsTo(Kendaraan::class, 'kendaraan_id');
     }
 }

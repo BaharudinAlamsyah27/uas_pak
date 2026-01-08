@@ -1,92 +1,106 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Kendaraan;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class KendaraanController extends Controller
 {
+    // MENAMPILKAN DATA (READ)
     public function index()
     {
-        $kendaraans = Kendaraan::all();
-        return view('admin.kendaraan.index', compact('kendaraans'));
+        $kendaraan = Kendaraan::all();
+        return view('admin.kendaraan.index', compact('kendaraan'));
     }
 
+    // FORM TAMBAH DATA (CREATE - View)
     public function create()
     {
         return view('admin.kendaraan.create');
     }
 
+    // PROSES SIMPAN DATA (CREATE - Logic)
     public function store(Request $request)
     {
+        // 1. Validasi
         $request->validate([
             'merk' => 'required',
-            'deskripsi' => 'required',
+            'plat_nomor' => 'required|unique:kendaraan,plat_nomor',
             'harga' => 'required|numeric',
-            'plat_nomor' => 'required|unique:kendaraans',
-            'gambar' => 'required|image|mimes:jpg,png,jpeg|max:2048',
-            'status' => 'required'
+            'status' => 'required',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Validasi file gambar
         ]);
 
-        $input = $request->all();
-
-        if ($image = $request->file('gambar')) {
-            $destinationPath = 'uploads/mobil/';
-            $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
-            $image->move(public_path($destinationPath), $profileImage);
-            $input['gambar'] = $destinationPath . $profileImage;
+        // 2. Upload Gambar (Jika ada)
+        $gambarPath = null;
+        if ($request->hasFile('gambar')) {
+            $gambarPath = $request->file('gambar')->store('kendaraan_images', 'public');
         }
 
-        Kendaraan::create($input);
-        return redirect()->route('kendaraan.index')->with('success', 'Mobil berhasil ditambahkan');
+        // 3. Simpan ke Database
+        Kendaraan::create([
+            'merk' => $request->merk,
+            'deskripsi' => $request->deskripsi,
+            'harga' => $request->harga,
+            'plat_nomor' => $request->plat_nomor,
+            'status' => $request->status,
+            'gambar' => $gambarPath,
+        ]);
+
+        return redirect()->route('kendaraan.index')->with('success', 'Data berhasil ditambahkan');
     }
 
+    // FORM EDIT DATA (UPDATE - View)
     public function edit($id)
     {
         $kendaraan = Kendaraan::findOrFail($id);
         return view('admin.kendaraan.edit', compact('kendaraan'));
     }
 
+    // PROSES UPDATE DATA (UPDATE - Logic)
     public function update(Request $request, $id)
     {
-        $kendaraan = Kendaraan::findOrFail($id);
-        
         $request->validate([
             'merk' => 'required',
             'harga' => 'required|numeric',
-            'status' => 'required'
+            'gambar' => 'nullable|image|max:2048',
         ]);
 
+        $kendaraan = Kendaraan::findOrFail($id);
         $input = $request->all();
 
-        if ($image = $request->file('gambar')) {
-            // Hapus gambar lama
-            if (File::exists(public_path($kendaraan->gambar))) {
-                File::delete(public_path($kendaraan->gambar));
+        // Logic Update Gambar
+        if ($request->hasFile('gambar')) {
+            // Hapus gambar lama jika ada
+            if ($kendaraan->gambar && Storage::exists('public/' . $kendaraan->gambar)) {
+                Storage::delete('public/' . $kendaraan->gambar);
             }
-            
-            $destinationPath = 'uploads/mobil/';
-            $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
-            $image->move(public_path($destinationPath), $profileImage);
-            $input['gambar'] = $destinationPath . $profileImage;
+            // Upload gambar baru
+            $input['gambar'] = $request->file('gambar')->store('kendaraan_images', 'public');
         } else {
+            // Jika tidak upload baru, pakai gambar lama
             unset($input['gambar']);
         }
 
         $kendaraan->update($input);
-        return redirect()->route('kendaraan.index')->with('success', 'Data berhasil diubah');
+
+        return redirect()->route('kendaraan.index')->with('success', 'Data berhasil diperbarui');
     }
 
+    // HAPUS DATA (DELETE)
     public function destroy($id)
     {
         $kendaraan = Kendaraan::findOrFail($id);
-        if (File::exists(public_path($kendaraan->gambar))) {
-            File::delete(public_path($kendaraan->gambar));
+
+        // Hapus gambar dari folder penyimpanan
+        if ($kendaraan->gambar && Storage::exists('public/' . $kendaraan->gambar)) {
+            Storage::delete('public/' . $kendaraan->gambar);
         }
+
         $kendaraan->delete();
-        return redirect()->route('kendaraan.index')->with('success', 'Mobil berhasil dihapus');
+
+        return redirect()->route('kendaraan.index')->with('success', 'Data berhasil dihapus');
     }
 }

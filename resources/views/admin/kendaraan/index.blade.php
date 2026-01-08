@@ -1,55 +1,105 @@
-@extends('admin.dashboard') {{-- Menggunakan dashboard sebagai layout utama --}}
+@extends('layouts.admin') 
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="header-title">Daftar Armada Kendaraan</h4>
-                        <a href="{{ route('kendaraan.create') }}" class="btn btn-primary">Tambah Mobil</a>
-                    </div>
-                    
-                    @if(session('success'))
-                        <div class="alert alert-success">{{ session('success') }}</div>
-                    @endif
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-flex align-items-center justify-content-between">
+            <h4 class="mb-0 font-size-18">Data Kendaraan</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="javascript: void(0);">Admin</a></li>
+                    <li class="breadcrumb-item active">Kendaraan</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
 
-                    <table class="table table-bordered dt-responsive nowrap w-100">
-                        <thead>
+<div class="row">
+    <div class="col-12">
+        
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="mdi mdi-check-all mr-2"></i> {{ session('success') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="card-title">Daftar Armada</h4>
+                    <a href="{{ route('kendaraan.create') }}" class="btn btn-primary waves-effect waves-light">
+                        <i class="bx bx-plus font-size-16 align-middle mr-2"></i> Tambah Baru
+                    </a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-centered table-nowrap table-hover">
+                        <thead class="thead-light">
                             <tr>
+                                <th style="width: 70px;">No.</th>
                                 <th>Gambar</th>
-                                <th>Merk</th>
-                                <th>Plat Nomor</th>
-                                <th>Harga/Hari</th>
+                                <th>Merk & Plat</th>
+                                <th>Harga Sewa</th>
                                 <th>Status</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($kendaraans as $k)
+                            @forelse($kendaraan as $key => $item)
                             <tr>
-                                <td><img src="{{ asset($k->gambar) }}" width="100"></td>
-                                <td>{{ $k->merk }}</td>
-                                <td>{{ $k->plat_nomor }}</td>
-                                <td>Rp {{ number_format($k->harga) }}</td>
+                                <td>{{ $key + 1 }}</td>
                                 <td>
-                                    <span class="badge {{ $k->status == 'tersedia' ? 'bg-success' : 'bg-danger' }}">
-                                        {{ $k->status }}
-                                    </span>
+                                    @if($item->gambar)
+                                        <img class="rounded" src="{{ asset('storage/' . $item->gambar) }}" alt="Header" height="50">
+                                    @else
+                                        <div class="avatar-xs">
+                                            <span class="avatar-title rounded-circle bg-soft-primary text-primary">
+                                                {{ substr($item->merk, 0, 1) }}
+                                            </span>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td>
-                                    <a href="{{ route('kendaraan.edit', $k->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                                    <form action="{{ route('kendaraan.destroy', $k->id) }}" method="POST" style="display:inline">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-danger btn-sm" onclick="return confirm('Hapus?')">Hapus</button>
+                                    <h5 class="font-size-14 mb-1"><a href="#" class="text-dark">{{ $item->merk }}</a></h5>
+                                    <p class="text-muted mb-0">{{ $item->plat_nomor }}</p>
+                                </td>
+                                <td>Rp {{ number_format($item->harga, 0, ',', '.') }} / hari</td>
+                                <td>
+                                    @if($item->status == 'Tersedia')
+                                        <span class="badge badge-pill badge-soft-success font-size-12">Tersedia</span>
+                                    @else
+                                        <span class="badge badge-pill badge-soft-danger font-size-12">Disewa</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <a href="{{ route('kendaraan.edit', $item->id) }}" class="btn btn-outline-warning btn-sm" title="Edit">
+                                        <i class="mdi mdi-pencil"></i>
+                                    </a>
+                                    
+                                    <form action="{{ route('kendaraan.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Hapus">
+                                            <i class="mdi mdi-trash-can"></i>
+                                        </button>
                                     </form>
                                 </td>
                             </tr>
-                            @endforeach
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <div class="text-muted">Belum ada data kendaraan.</div>
+                                </td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
+
             </div>
         </div>
     </div>
