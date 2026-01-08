@@ -229,19 +229,21 @@
             <img src="{{ asset('front_assets/images/about-img.png') }}" alt="">
           </div>
         </div>
-        <div class="col-md-4 col-lg-3">
-          <div class="detail-box">
-            <h2>
-              About Our Cars
-            </h2>
-            <p>
-              It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem
-            </p>
-            <a href="">
-              Read More
-            </a>
-          </div>
+        <div class="row">
+    @foreach($mobils as $mobil)
+    <div class="col-md-4">
+        <div class="card mb-4 shadow-sm">
+            <img src="{{ asset($mobil->gambar) }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+            <div class="card-body">
+                <h5 class="card-title">{{ $mobil->merk }}</h5>
+                <p class="text-primary fw-bold">Rp {{ number_format($mobil->harga) }} / Hari</p>
+                <p class="card-text">{{ Str::limit($mobil->description, 50) }}</p>
+                <a href="{{ url('/sewa/'.$mobil->id) }}" class="btn btn-block btn-outline-primary">Sewa Sekarang</a>
+            </div>
         </div>
+    </div>
+    @endforeach
+</div>
       </div>
     </div>
   </section>

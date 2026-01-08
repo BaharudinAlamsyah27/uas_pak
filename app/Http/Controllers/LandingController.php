@@ -3,16 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Kendaraan;
 
 class LandingController extends Controller
 {
     // 1. Tambahkan fungsi index ini
-    public function index()
-    {
-        // Pastikan nama view-nya sesuai dengan file di resources/views
-        // Contoh: jika nama filenya welcome.blade.php, tulis 'welcome'
-        return view('landing'); 
-    }
+    public function index() {
+        $mobils = Kendaraan::where('status', 'tersedia')->get();
+        return view('landing', compact('mobils'));
+}
 
     // 2. Karena di route tadi kamu juga ada 'storeSewa',
     // sebaiknya buat sekalian kerangkanya agar tidak error nanti.
